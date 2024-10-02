@@ -79,31 +79,36 @@
             currentTab = tabId;
         }
 
-        function addTab() {
-            const newTabId = `tab${document.querySelectorAll('.tab-content').length + 1}`;
-            const newTab = document.createElement('div');
-            newTab.className = 'tab';
-            newTab.innerText = `Tab ${document.querySelectorAll('.tab-content').length + 1}`;
-            newTab.innerHTML += ` <span class="close-btn" onclick="closeTab(event, '${newTabId}')">x</span>`;
-            newTab.setAttribute('onclick', `openTab('${newTabId}')`);
-            document.querySelector('.tabs').insertBefore(newTab, document.querySelector('.tabs button'));
-
-            const newTabContent = document.createElement('div');
-            newTabContent.className = 'tab-content';
-            newTabContent.id = newTabId;
-            newTabContent.innerHTML = `<iframe src="https://www.example.com" id="iframe${document.querySelectorAll('.tab-content').length + 1}"></iframe>`;
-            document.body.appendChild(newTabContent);
-        }
-
         function closeTab(event, tabId) {
             event.stopPropagation();
             document.getElementById(tabId).remove();
             document.querySelector(`.tab[onclick="openTab('${tabId}')"]`).remove();
             if (currentTab === tabId) {
-                const tabs = document.querySelectorAll('.tab-content');
-                if (tabs.length > 0) {
-                    openTab(tabs[0].id);
-                }
+                openTab('tab1');
+            }
+        }
+
+        function addTab() {
+            const newTabId = `tab${document.querySelectorAll('.tab').length + 1}`;
+            const newTab = document.createElement('div');
+            newTab.className = 'tab';
+            newTab.setAttribute('onclick', `openTab('${newTabId}')`);
+            newTab.innerHTML = `New Tab <span class="close-btn" onclick="closeTab(event, '${newTabId}')">x</span>`;
+            document.querySelector('.tabs').insertBefore(newTab, document.querySelector('.tabs button'));
+
+            const newTabContent = document.createElement('div');
+            newTabContent.className = 'tab-content';
+            newTabContent.id = newTabId;
+            newTabContent.innerHTML = `<iframe src="https://www.example.com" id="iframe${newTabId}"></iframe>`;
+            document.body.appendChild(newTabContent);
+
+            openTab(newTabId);
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                const url = document.getElementById('urlInput').value;
+                document.querySelector(`#${currentTab} iframe`).src = url;
             }
         }
 
@@ -120,42 +125,17 @@
         }
 
         function goHome() {
-            openTab('bookmarks');
-        }
-
-        function clearHistory() {
-            history = [];
-            document.getElementById('historyList').innerHTML = '';
-        }
-
-        function addToHistory(url) {
-            history.push(url);
-            const historyItem = document.createElement('li');
-            historyItem.innerText = url;
-            document.getElementById('historyList').appendChild(historyItem);
-        }
-
-        function handleKeyPress(event) {
-            if (event.key === 'Enter') {
-                const url = document.getElementById('urlInput').value;
-                document.querySelector(`#${currentTab} iframe`).src = url;
-                addToHistory(url);
-            }
-        }
-
-        function toggleProxy() {
-            proxyEnabled = !proxyEnabled;
-            document.getElementById('proxyStatus').innerText = `Proxy is ${proxyEnabled ? 'on' : 'off'}`;
-            // Implement proxy functionality here
+            document.querySelector(`#${currentTab} iframe`).src = 'https://www.example.com';
         }
 
         function addBookmark() {
             const url = document.querySelector(`#${currentTab} iframe`).src;
             bookmarks.push(url);
+            const bookmarkList = document.getElementById('bookmarkList');
             const bookmarkItem = document.createElement('li');
             bookmarkItem.className = 'bookmark';
             bookmarkItem.innerHTML = `${url} <button onclick="removeBookmark('${url}')">Remove</button>`;
-            document.getElementById('bookmarkList').appendChild(bookmarkItem);
+            bookmarkList.appendChild(bookmarkItem);
         }
 
         function removeBookmark(url) {
@@ -170,14 +150,24 @@
             });
         }
 
-        function toggleFirstScreen() {
-            const firstScreenToggle = document.getElementById('firstScreenToggle').checked;
-            // Implement functionality to show/hide first screen
+        function toggleProxy() {
+            proxyEnabled = !proxyEnabled;
+            document.getElementById('proxyStatus').innerText = `Proxy is ${proxyEnabled ? 'on' : 'off'}`;
         }
 
-        document.querySelectorAll('iframe').forEach(iframe => {
-            iframe.onload = () => addToHistory(iframe.src);
-        });
+        function toggleFirstScreen() {
+            const firstScreenToggle = document.getElementById('firstScreenToggle');
+            if (firstScreenToggle.checked) {
+                document.querySelector('.toolbar').style.display = 'none';
+            } else {
+                document.querySelector('.toolbar').style.display = 'flex';
+            }
+        }
+
+        function clearHistory() {
+            history = [];
+            document.getElementById('historyList').innerHTML = '';
+        }
     </script>
 </body>
 </html>
