@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Web Browser</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+        .toolbar, .tabs { display: flex; align-items: center; background: #f1f1f1; padding: 10px; border-bottom: 1px solid #ccc; }
+        .toolbar { justify-content: space-between; }
+        .tabs { justify-content: flex-start; }
+        .tab { padding: 10px 20px; background: #ddd; cursor: pointer; border-radius: 10px 10px 0 0; margin-right: 5px; position: relative; }
+        .tab.active { background: #bbb; }
+        .tab .close-btn { position: absolute; right: 5px; top: 5px; cursor: pointer; background: #f00; color: #fff; border-radius: 50%; padding: 2px 5px; }
+        .tab-content { display: none; padding: 20px; border: 1px solid #ddd; border-radius: 0 0 10px 10px; }
+        .tab-content.active { display: block; }
+        .toolbar button, .toolbar input { margin-right: 5px; padding: 5px 10px; border: 1px solid #ccc; border-radius: 5px; }
+        .toolbar input { flex: 1; }
+        iframe { width: 100%; height: 400px; border: 1px solid #ddd; border-radius: 0 0 10px 10px; }
+        .settings, .history, .bookmarks { padding: 20px; }
+        .settings h2, .history h2, .bookmarks h2 { margin-top: 0; }
+        .settings input, .settings button { display: block; margin: 10px 0; padding: 5px; }
+        .bookmark { display: flex; align-items: center; margin: 5px 0; }
+        .bookmark button { margin-left: 10px; }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <button onclick="goBack()">Back</button>
+        <button onclick="goForward()">Forward</button>
+        <button onclick="refreshPage()">Refresh</button>
+        <button onclick="goHome()">Home</button>
+        <input type="text" id="urlInput" placeholder="Enter URL and press Enter" onkeypress="handleKeyPress(event)">
+        <button onclick="addBookmark()">Bookmark</button>
+        <button onclick="openTab('settings')">Settings</button>
+        <button onclick="openTab('history')">History</button>
+    </div>
+    <div class="tabs">
+        <div class="tab active" onclick="openTab('tab1')">Tab 1 <span class="close-btn" onclick="closeTab(event, 'tab1')">x</span></div>
+        <div class="tab" onclick="openTab('tab2')">Tab 2 <span class="close-btn" onclick="closeTab(event, 'tab2')">x</span></div>
+        <button onclick="addTab()">+</button>
+    </div>
+    <div id="tab1" class="tab-content active">
+        <iframe src="https://www.example.com" id="iframe1"></iframe>
+    </div>
+    <div id="tab2" class="tab-content">
+        <iframe src="https://www.example.com" id="iframe2"></iframe>
+    </div>
+    <div id="settings" class="tab-content settings">
+        <h2>Settings</h2>
+        <label for="proxyUrl">Proxy URL:</label>
+        <input type="text" id="proxyUrl" placeholder="Enter proxy URL">
+        <button onclick="toggleProxy()">Toggle Proxy</button>
+        <p id="proxyStatus">Proxy is off</p>
+        <label for="firstScreenToggle">Show First Screen:</label>
+        <input type="checkbox" id="firstScreenToggle" onchange="toggleFirstScreen()">
+    </div>
+    <div id="history" class="tab-content history">
+        <h2>History</h2>
+        <button onclick="clearHistory()">Clear History</button>
+        <ul id="historyList"></ul>
+    </div>
+    <div id="bookmarks" class="tab-content bookmarks">
+        <h2>Bookmarks</h2>
+        <ul id="bookmarkList"></ul>
+    </div>
+
+    <script>
+        let currentTab = 'tab1';
+        let history = [];
+        let bookmarks = [];
+        let proxyEnabled = false;
+
+        function openTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.querySelector(`.tab[onclick="openTab('${tabId}')"]`).classList.add('active');
+            currentTab = tabId;
+        }
+
+        function addTab() {
+            const newTabId = `tab${document.querySelectorAll('.tab-content').length + 1}`;
+            const newTab = document.createElement('div');
+            newTab.className = 'tab';
+            newTab.innerText = `Tab ${document.querySelectorAll('.tab-content').length + 1}`;
+            newTab.innerHTML += ` <span class="close-btn" onclick="closeTab(event, '${newTabId}')">x</span>`;
+            newTab.setAttribute('onclick', `openTab('${newTabId}')`);
+            document.querySelector('.tabs').insertBefore(newTab, document.querySelector('.tabs button'));
+
+            const newTabContent = document.createElement('div');
+            newTabContent.className = 'tab-content';
+            newTabContent.id = newTabId;
+            newTabContent.innerHTML = `<iframe src="https://www.example.com" id="iframe${document.querySelectorAll('.tab-content').length + 1}"></iframe>`;
+            document.body.appendChild(newTabContent);
+        }
+
+        function closeTab(event, tabId) {
+            event.stopPropagation();
+            document.getElementById(tabId).remove();
+            document.querySelector(`.tab[onclick="openTab('${tabId}')"]`).remove();
+            if (currentTab === tabId) {
+                const tabs = document.querySelectorAll('.tab-content');
+                if (tabs.length > 0) {
+                    openTab(tabs[0].id);
+                }
+            }
+        }
+
+        function goBack() {
+            document.querySelector(`#${currentTab} iframe`).contentWindow.history.back();
+        }
+
+        function goForward() {
+            document.querySelector(`#${currentTab} iframe`).contentWindow.history.forward();
+        }
+
+        function refreshPage() {
+            document.querySelector(`#${currentTab} iframe`).contentWindow.location.reload();
+        }
+
+        function goHome() {
+            openTab('bookmarks');
+        }
+
+        function clearHistory() {
+            history = [];
+            document.getElementById('historyList').innerHTML = '';
+        }
+
+        function addToHistory(url) {
+            history.push(url);
+            const historyItem = document.createElement('li');
+            historyItem.innerText = url;
+            document.getElementById('historyList').appendChild(historyItem);
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                const url = document.getElementById('urlInput').value;
+                document.querySelector(`#${currentTab} iframe`).src = url;
+                addToHistory(url);
+            }
+        }
+
+        function toggleProxy() {
+            proxyEnabled = !proxyEnabled;
+            document.getElementById('proxyStatus').innerText = `Proxy is ${proxyEnabled ? 'on' : 'off'}`;
+            // Implement proxy functionality here
+        }
+
+        function addBookmark() {
+            const url = document.querySelector(`#${currentTab} iframe`).src;
+            bookmarks.push(url);
+            const bookmarkItem = document.createElement('li');
+            bookmarkItem.className = 'bookmark';
+            bookmarkItem.innerHTML = `${url} <button onclick="removeBookmark('${url}')">Remove</button>`;
+            document.getElementById('bookmarkList').appendChild(bookmarkItem);
+        }
+
+        function removeBookmark(url) {
+            bookmarks = bookmarks.filter(bookmark => bookmark !== url);
+            const bookmarkList = document.getElementById('bookmarkList');
+            bookmarkList.innerHTML = '';
+            bookmarks.forEach(bookmark => {
+                const bookmarkItem = document.createElement('li');
+                bookmarkItem.className = 'bookmark';
+                bookmarkItem.innerHTML = `${bookmark} <button onclick="removeBookmark('${bookmark}')">Remove</button>`;
+                bookmarkList.appendChild(bookmarkItem);
+            });
+        }
+
+        function toggleFirstScreen() {
+            const firstScreenToggle = document.getElementById('firstScreenToggle').checked;
+            // Implement functionality to show/hide first screen
+        }
+
+        document.querySelectorAll('iframe').forEach(iframe => {
+            iframe.onload = () => addToHistory(iframe.src);
+        });
+    </script>
+</body>
+</html>
