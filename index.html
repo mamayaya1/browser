@@ -243,13 +243,19 @@
         }
 
         function renderBookmarks() {
-            bookmarksList.innerHTML = '';
-            bookmarks.forEach(bookmark => {
-                const li = document.createElement('li');
-                li.innerHTML = `<a href="${bookmark.url}" target="_blank">${bookmark.name}</a>`;
-                bookmarksList.appendChild(li);
-            });
-        }
+    bookmarksList.innerHTML = '';
+    bookmarks.forEach((bookmark, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = `<a href="${bookmark.url}" target="_blank">${bookmark.name}</a>
+                        <button onclick="removeBookmark(${index})">Remove</button>`;
+        bookmarksList.appendChild(li);
+    });
+}
+        function removeBookmark(index) {
+    bookmarks.splice(index, 1);
+    localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+    renderBookmarks();
+}
 
         function renderHistory() {
             historyList.innerHTML = '';
@@ -363,6 +369,27 @@
                 body.classList.add('light-mode');
             }
         }
+    </script>
+    <script>
+        // ... your existing code ...
+    
+        function renderBookmarks() {
+            bookmarksList.innerHTML = '';
+            bookmarks.forEach((bookmark, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `<a href="${bookmark.url}" target="_blank">${bookmark.name}</a>
+                                <button onclick="removeBookmark(${index})">Remove</button>`;
+                bookmarksList.appendChild(li);
+            });
+        }
+    
+        function removeBookmark(index) {
+            bookmarks.splice(index, 1);
+            localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+            renderBookmarks();
+        }
+    
+        // ... your existing code ...
     </script>
 </body>
 </html>
