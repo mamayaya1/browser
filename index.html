@@ -145,7 +145,7 @@
 <body class="light-mode" id="body">
     <div class="toolbar">
         <button class="nav-btn" onclick="reloadPage()">🔄 Reload</button>
-        <button onclick="openTab('bookmarksPage')">Home</button>
+        <button onclick="openTab('bookmarksPage')">Bookmark manager</button>
         <input type="text" id="urlInput" placeholder="Enter URL and press Enter" onkeypress="handleKeyPress(event)">
         <button onclick="addBookmark()">⭐ Bookmark</button>
         <button onclick="openTab('settings')">⚙️ Settings</button>
@@ -209,27 +209,7 @@
             }
         }
 
-        function navigateToUrl(url, pushToHistory = true) {
-            const activeIframe = document.querySelector(`.tab-content.active iframe`);
-
-            if (!url.startsWith('http')) {
-                url = 'https://' + url; // Default to https if no scheme is provided
-            }
-
-            if (proxyEnabled && proxyUrl) {
-                activeIframe.src = `${proxyUrl}${url}`;
-            } else {
-                activeIframe.src = url;
-            }
-
-            if (pushToHistory) {
-                if (!tabHistories[activeTabId]) {
-                    tabHistories[activeTabId] = { history: [], current: -1 };
-                }
-                tabHistories[activeTabId].history.push(url);
-                tabHistories[activeTabId].current++;
-            }
-        }
+       
 
         function addBookmark() {
             const activeIframe = document.querySelector(`.tab-content.active iframe`);
@@ -257,14 +237,7 @@
     renderBookmarks();
 }
 
-        function renderHistory() {
-            historyList.innerHTML = '';
-            history.forEach(item => {
-                const li = document.createElement('li');
-                li.textContent = item;
-                historyList.appendChild(li);
-            });
-        }
+      
 
         function clearHistory() {
             history = [];
@@ -272,10 +245,7 @@
             renderHistory();
         }
 
-        function toggleProxy() {
-            proxyEnabled = !proxyEnabled;
-            document.getElementById('proxyStatus').textContent = proxyEnabled ? 'Proxy is on' : 'Proxy is off';
-        }
+
 
         function toggleFirstScreen() {
             localStorage.setItem('firstScreen', document.getElementById('firstScreenToggle').checked);
@@ -390,6 +360,91 @@
         }
     
         // ... your existing code ...
+        // Add this function to save history
+function saveHistory(url) {
+    if (!history.includes(url)) {
+        history.push(url);
+        localStorage.setItem('history', JSON.stringify(history));
+        renderHistory();
+    }
+}
+
+// Update the renderHistory function
+function renderHistory() {
+    historyList.innerHTML = '';
+    history.forEach((item, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = `${item} <button onclick="removeHistory(${index})">Remove</button>`;
+        historyList.appendChild(li);
+    });
+}
+
+// Add this function to remove history items
+function removeHistory(index) {
+    history.splice(index, 1);
+    localStorage.setItem('history', JSON.stringify(history));
+    renderHistory();
+}
+
+// Add these functions to your existing <script> section in your HTML file
+
+    function toggleProxy() {
+    const proxyUrlInput = document.getElementById('proxyUrl').value;
+    if (proxyUrlInput) {
+        proxyEnabled = !proxyEnabled;
+        proxyUrl = proxyUrlInput;
+        localStorage.setItem('proxyUrl', proxyUrl);
+        document.getElementById('proxyStatus').textContent = proxyEnabled ? 'Proxy is on' : 'Proxy is off';
+    } else {
+        alert("Please enter a valid proxy URL.");
+    }
+}
+
+function navigateToUrl(url, pushToHistory = true) {
+    const activeIframe = document.querySelector(`.tab-content.active iframe`);
+
+    // Clean up the URL to avoid malformed URLs
+    url = url.trim();
+
+    // Ensure the URL is correctly formatted
+    if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('file:///')) {
+        url = 'https://' + url; // Default to https if no scheme is provided
+    }
+
+    // Handle proxy URL prepending
+    let finalUrl = url;
+    if (proxyEnabled && proxyUrl) {
+        if (proxyUrl.startsWith('http://') || proxyUrl.startsWith('https://')) {
+            finalUrl = `${proxyUrl}${url}`;
+        } else if (proxyUrl.startsWith('socks5://')) {
+            finalUrl = proxyUrl + url;
+        } else {
+            alert("Unsupported proxy type. Please use http or socks5.");
+            return;
+        }
+
+        // Check if the final URL already contains the proxy to avoid double prepending
+        if (finalUrl.startsWith(proxyUrl) && url.startsWith(proxyUrl)) {
+            finalUrl = url;
+        }
+    }
+
+    // Load the final URL
+    activeIframe.src = finalUrl;
+
+    // Handle history
+    if (pushToHistory) {
+        if (!tabHistories[activeTabId]) {
+            tabHistories[activeTabId] = { history: [], current: -1 };
+        }
+        tabHistories[activeTabId].history.push(url);
+        tabHistories[activeTabId].current++;
+        saveHistory(url);
+    }
+}
+
+
+
     </script>
 </body>
 </html>
