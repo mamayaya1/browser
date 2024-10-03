@@ -3,126 +3,240 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Web Browser</title>
+    <title>Enhanced Web Browser</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-        .toolbar, .tabs { display: flex; align-items: center; background: #f1f1f1; padding: 10px; border-bottom: 1px solid #ccc; }
-        .toolbar { justify-content: space-between; }
-        .tabs { justify-content: flex-start; }
-        .tab { padding: 10px 20px; background: #ddd; cursor: pointer; border-radius: 10px 10px 0 0; margin-right: 5px; position: relative; }
-        .tab.active { background: #bbb; }
-        .tab .close-btn { position: absolute; right: 5px; top: 5px; cursor: pointer; background: #f00; color: #fff; border-radius: 50%; padding: 2px 7px; }
-        .tab-content { display: none; padding: 20px; border: 1px solid #ddd; border-radius: 0 0 10px 10px; }
-        .tab-content.active { display: block; }
-        .toolbar button, .toolbar input { margin-right: 5px; padding: 5px 10px; border: 1px solid #ccc; border-radius: 5px; }
-        .toolbar input { flex: 1; }
-        iframe { width: 100%; height: calc(100vh - 100px); border: 1px solid #ddd; border-radius: 0 0 10px 10px; }
-        .settings, .history, .bookmarks { padding: 20px; }
-        .settings h2, .history h2, .bookmarks h2 { margin-top: 0; }
-        .settings input, .settings button { display: block; margin: 10px 0; padding: 5px; }
-        .bookmark { display: flex; align-items: center; margin: 5px 0; }
-        .bookmark button { margin-left: 10px; }
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            color: #333;
+            height: 100vh; /* Ensure body takes full height */
+            display: flex;
+            flex-direction: column; /* Stack children vertically */
+        }
+        .toolbar {
+            display: flex;
+            align-items: center;
+            background-color: #fff;
+            border-bottom: 1px solid #ddd;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .nav-btn {
+            color: #555;
+            border: none;
+            background: #f0f0f0;
+            padding: 5px 10px;
+            margin-right: 5px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        .nav-btn:hover {
+            background: #e0e0e0;
+        }
+        .tabs {
+            display: flex;
+            background-color: #f0f0f0;
+            padding: 5px;
+            border-bottom: 1px solid #ddd;
+        }
+        .tab {
+            color: #555;
+            padding: 10px 15px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            border-radius: 4px 4px 0 0;
+            margin-right: 5px;
+            background-color: #fff;
+            transition: background 0.3s;
+        }
+        .tab.active {
+            background-color: #e0e0e0;
+            border-bottom: 1px solid transparent;
+        }
+        .close-btn {
+            margin-left: 10px;
+            color: red;
+            cursor: pointer;
+        }
+        .tab-content {
+            flex-grow: 1; /* Allow content area to grow */
+            display: none;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 0 0 4px 4px;
+            background-color: #fff;
+            overflow: auto; /* Allow scrolling if content is too large */
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .settings, .history, .bookmarks {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 20px;
+            margin-top: 10px;
+        }
+        iframe {
+            width: 100%;
+            height: 100%; /* Allow iframe to take full height */
+            border: none;
+        }
+        .dark-mode {
+            background-color: #222;
+            color: white;
+        }
+        .dark-mode .toolbar, .dark-mode .tabs {
+            background-color: #333;
+        }
+        .dark-mode .settings, .dark-mode .history, .dark-mode .bookmarks {
+            background-color: #444;
+            border-color: #666;
+        }
+        .dark-mode .tab {
+            background-color: #333;
+            color: white;
+        }
+        .dark-mode .tab.active {
+            background-color: #666;
+        }
     </style>
 </head>
-<body>
+<body class="light-mode" id="body">
     <div class="toolbar">
-        <button onclick="goBack()">Back</button>
-        <button onclick="goForward()">Forward</button>
-        <button onclick="refreshPage()">Refresh</button>
-        <button onclick="openTab('bookmarksPage')">Home</button>
+        <button class="nav-btn" onclick="reloadPage()">🔄 Reload</button>
+        <button class="nav-btn" onclick="openTab('bookmarksPage')">🏠 Home</button>
         <input type="text" id="urlInput" placeholder="Enter URL and press Enter" onkeypress="handleKeyPress(event)">
-        <button onclick="addBookmark()">Bookmark</button>
-        <button onclick="openTab('settings')">Settings</button>
-        <button onclick="openTab('history')">History</button>
+        <button class="nav-btn" onclick="addBookmark()">⭐ Bookmark</button>
+        <button class="nav-btn" onclick="openTab('settings')">⚙️ Settings</button>
+        <button class="nav-btn" onclick="openTab('history')">🕒 History</button>
     </div>
     <div class="tabs" id="tabsContainer">
-        <div class="tab active" data-tab="tab1" onclick="openTab('tab1')">Tab 1 <span class="close-btn" onclick="closeTab(event, 'tab1')">x</span></div>
-        <div class="tab" data-tab="tab2" onclick="openTab('tab2')">Tab 2 <span class="close-btn" onclick="closeTab(event, 'tab2')">x</span></div>
-        <button onclick="addTab()">+</button>
+        <div class="tab active" data-tab="tab1" onclick="openTab('tab1')">Tab <span class="close-btn" onclick="closeTab(event, 'tab1')">x</span></div>
+        <button class="nav-btn" onclick="addTab()">➕</button>
     </div>
     <div id="tab1" class="tab-content active">
         <iframe src="https://www.example.com" id="iframe1"></iframe>
-    </div>
-    <div id="tab2" class="tab-content">
-        <iframe src="https://www.example.com" id="iframe2"></iframe>
     </div>
     <div id="settings" class="tab-content settings">
         <h2>Settings</h2>
         <label for="proxyUrl">Proxy URL:</label>
         <input type="text" id="proxyUrl" placeholder="Enter proxy URL">
-        <button onclick="toggleProxy()">Toggle Proxy</button>
+        <button class="nav-btn" onclick="toggleProxy()">Toggle Proxy</button>
         <p id="proxyStatus">Proxy is off</p>
         <label for="firstScreenToggle">Show First Screen:</label>
         <input type="checkbox" id="firstScreenToggle" onchange="toggleFirstScreen()">
+        <label for="modeToggle">Dark Mode:</label>
+        <input type="checkbox" id="modeToggle" onchange="toggleDarkMode()">
     </div>
     <div id="history" class="tab-content history">
         <h2>History</h2>
-        <button onclick="clearHistory()">Clear History</button>
+        <button class="nav-btn" onclick="clearHistory()">Clear History</button>
         <ul id="historyList"></ul>
     </div>
     <div id="bookmarksPage" class="tab-content bookmarks">
         <h2>Bookmarks</h2>
-        <ul id="bookmarksList">
-            <!-- Bookmarks will be dynamically added here -->
-        </ul>
+        <ul id="bookmarksList"></ul>
     </div>
 
     <script>
         const bookmarksList = document.getElementById('bookmarksList');
+        const historyList = document.getElementById('historyList');
+        let proxyEnabled = false;
+        let proxyUrl = localStorage.getItem('proxyUrl') || '';
+        let history = JSON.parse(localStorage.getItem('history')) || [];
+        let bookmarks = JSON.parse(localStorage.getItem('bookmarks')) || [];
+        let tabHistories = {};
+        let activeTabId = 'tab1';
 
-        // Example bookmarks
-        const bookmarks = [
-            { name: 'Google', url: 'https://www.google.com' },
-            { name: 'GitHub', url: 'https://www.github.com' },
-            { name: 'Stack Overflow', url: 'https://stackoverflow.com' }
-        ];
+        // Load settings from local storage
+        document.getElementById('proxyUrl').value = proxyUrl;
+        document.getElementById('firstScreenToggle').checked = localStorage.getItem('firstScreen') === 'true';
 
-        bookmarks.forEach(bookmark => {
-            const li = document.createElement('li');
-            const a = document.createElement('a');
-            a.href = bookmark.url;
-            a.textContent = bookmark.name;
-            a.target = '_self'; // Open in the same tab
-            li.appendChild(a);
-            bookmarksList.appendChild(li);
-        });
+        // Initialize bookmarks and history
+        renderBookmarks();
+        renderHistory();
 
-        function goBack() {
-            const activeIframe = document.querySelector('.tab-content.active iframe');
-            activeIframe.contentWindow.history.back();
-        }
-
-        function goForward() {
-            const activeIframe = document.querySelector('.tab-content.active iframe');
-            activeIframe.contentWindow.history.forward();
-        }
-
-        function refreshPage() {
-            const activeIframe = document.querySelector('.tab-content.active iframe');
-            activeIframe.contentWindow.location.reload();
+        function reloadPage() {
+            const activeIframe = document.querySelector(`.tab-content.active iframe`);
+            activeIframe.src = activeIframe.src; // Reload the current iframe
         }
 
         function handleKeyPress(event) {
             if (event.key === 'Enter') {
                 const url = document.getElementById('urlInput').value;
-                const activeIframe = document.querySelector('.tab-content.active iframe');
+                navigateToUrl(url, true);
+            }
+        }
+
+        function navigateToUrl(url, pushToHistory = true) {
+            const activeIframe = document.querySelector(`.tab-content.active iframe`);
+
+            if (!url.startsWith('http')) {
+                url = 'https://' + url; // Default to https if no scheme is provided
+            }
+
+            if (proxyEnabled && proxyUrl) {
+                activeIframe.src = `${proxyUrl}${url}`;
+            } else {
                 activeIframe.src = url;
+            }
+
+            if (pushToHistory) {
+                if (!tabHistories[activeTabId]) {
+                    tabHistories[activeTabId] = { history: [], current: -1 };
+                }
+                tabHistories[activeTabId].history.push(url);
+                tabHistories[activeTabId].current++;
             }
         }
 
         function addBookmark() {
-            const activeIframe = document.querySelector('.tab-content.active iframe');
+            const activeIframe = document.querySelector(`.tab-content.active iframe`);
             const url = activeIframe.src;
             const name = prompt('Enter bookmark name:');
-            if (name) {
-                const li = document.createElement('li');
-                const a = document.createElement('a');
-                a.href = url;
-                a.textContent = name;
-                a.target = '_self'; // Open in the same tab
-                li.appendChild(a);
-                bookmarksList.appendChild(li);
+            if (name && name.trim()) { // Check if name is not empty
+                bookmarks.push({ name, url });
+                localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+                renderBookmarks();
             }
+        }
+
+        function removeBookmark(index) {
+            bookmarks.splice(index, 1); // Remove the bookmark at the specified index
+            localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+            renderBookmarks();
+        }
+
+        function renderBookmarks() {
+            bookmarksList.innerHTML = '';
+            bookmarks.forEach((bookmark, index) => {
+                if (bookmark.name && bookmark.url) { // Check if bookmark has a name and url
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <a href="${bookmark.url}" target="_blank">${bookmark.name}</a>
+                        <button onclick="removeBookmark(${index})">❌ Remove</button>
+                    `;
+                    bookmarksList.appendChild(li);
+                }
+            });
+        }
+
+        function renderHistory() {
+            historyList.innerHTML = '';
+            history.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item;
+                historyList.appendChild(li);
+            });
+        }
+
+        function clearHistory() {
+            history = [];
+            localStorage.setItem('history', JSON.stringify(history));
+            renderHistory();
         }
 
         function openTab(tabId) {
@@ -132,49 +246,83 @@
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.classList.remove('active');
             });
-            if (tabId === 'bookmarksPage') {
-                document.getElementById('bookmarksPage').classList.add('active');
-            } else {
-                document.getElementById(tabId).classList.add('active');
-                document.querySelector(`.tab[data-tab="${tabId}"]`).classList.add('active');
-            }
-        }
 
-        function closeTab(event, tabId) {
-            event.stopPropagation();
-            const tab = document.getElementById(tabId);
-            if (tab) {
-                tab.remove();
-                const tabBtn = document.querySelector(`.tab[data-tab="${tabId}"]`);
-                if (tabBtn) {
-                    tabBtn.remove();
-                }
-                // Ensure there's always one active tab
-                if (!document.querySelector('.tab-content.active')) {
-                    const firstTab = document.querySelector('.tab-content');
-                    if (firstTab) {
-                        firstTab.classList.add('active');
-                        document.querySelector(`.tab[data-tab="${firstTab.id}"]`).classList.add('active');
-                    }
-                }
+            document.getElementById(tabId).classList.add('active');
+            if (tabId === 'bookmarksPage') {
+                renderBookmarks();
             }
+            if (tabId === 'history') {
+                renderHistory();
+            }
+
+            const activeTab = document.querySelector(`.tab[data-tab="${tabId}"]`);
+            if (activeTab) activeTab.classList.add('active');
+            activeTabId = tabId; // Update the active tab id
         }
 
         function addTab() {
-            const newTabId = 'tab' + (document.querySelectorAll('.tab-content').length + 1);
-            const newTab = document.createElement('div');
-            newTab.className = 'tab-content';
-            newTab.id = newTabId;
-            newTab.innerHTML = `<iframe src="https://www.example.com" id="iframe${newTabId}"></iframe>`;
-            document.body.appendChild(newTab);
+            const tabCount = document.querySelectorAll('.tab').length + 1;
+            const newTabId = `tab${tabCount}`;
+            const tabsContainer = document.getElementById('tabsContainer');
 
-            const newTabButton = document.createElement('div');
-            newTabButton.className = 'tab';
-            newTabButton.dataset.tab = newTabId;
-            newTabButton.innerHTML = `Tab ${document.querySelectorAll('.tab-content').length} <span class="close-btn" onclick="closeTab(event, '${newTabId}')">x</span>`;
-            newTabButton.setAttribute('onclick', `openTab('${newTabId}')`);
-            document.querySelector('.tabs').insertBefore(newTabButton, document.querySelector('.tabs button'));
+            const newTab = document.createElement('div');
+            newTab.className = 'tab';
+            newTab.dataset.tab = newTabId;
+            newTab.innerHTML = `Tab <span class="close-btn" onclick="closeTab(event, '${newTabId}')">x</span>`;
+            tabsContainer.insertBefore(newTab, tabsContainer.lastChild); // Insert before the add tab button
+
+            const newTabContent = document.createElement('div');
+            newTabContent.id = newTabId;
+            newTabContent.className = 'tab-content';
+            newTabContent.innerHTML = `<iframe src="https://www.example.com"></iframe>`;
+            document.body.appendChild(newTabContent);
+
+            newTab.click(); // Open the new tab immediately
         }
+
+        function closeTab(event, tabId) {
+            event.stopPropagation(); // Prevent the tab from being clicked
+            const tab = document.querySelector(`.tab[data-tab="${tabId}"]`);
+            tab.remove(); // Remove the tab element
+            const content = document.getElementById(tabId);
+            content.remove(); // Remove the associated content
+
+            if (tab.classList.contains('active')) {
+                // If the closed tab was active, open the first tab
+                const firstTab = document.querySelector('.tab');
+                if (firstTab) firstTab.click();
+            }
+        }
+
+        function toggleProxy() {
+            proxyEnabled = !proxyEnabled;
+            document.getElementById('proxyStatus').textContent = proxyEnabled ? 'Proxy is on' : 'Proxy is off';
+            localStorage.setItem('proxyEnabled', proxyEnabled);
+        }
+
+        function toggleFirstScreen() {
+            const firstScreen = document.getElementById('firstScreenToggle').checked;
+            localStorage.setItem('firstScreen', firstScreen);
+            if (firstScreen) {
+                // Perform any actions needed when the first screen is enabled
+            }
+        }
+
+        function toggleDarkMode() {
+            const body = document.getElementById('body');
+            body.classList.toggle('dark-mode');
+            const modeToggle = document.getElementById('modeToggle');
+            const isDarkMode = modeToggle.checked;
+            localStorage.setItem('darkMode', isDarkMode);
+        }
+
+        // Load dark mode setting on page load
+        const isDarkMode = localStorage.getItem('darkMode') === 'true';
+        if (isDarkMode) {
+            document.getElementById('body').classList.add('dark-mode');
+            document.getElementById('modeToggle').checked = true;
+        }
+
     </script>
 </body>
 </html>
