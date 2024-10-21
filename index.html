@@ -5,114 +5,114 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enhanced Web Browser</title>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            margin: 0; 
-            padding: 0; 
-            background-color: #fff; 
-            color: #000; 
-            transition: background-color 0.5s, color 0.5s; 
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #fff;
+            color: #000;
+            transition: background-color 0.5s, color 0.5s;
         }
-        .toolbar, .tabs { 
-            display: flex; 
-            align-items: center; 
-            background: #f1f1f1; 
-            padding: 10px; 
-            border-bottom: 1px solid #ccc; 
+        .toolbar, .tabs {
+            display: flex;
+            align-items: center;
+            background: #f1f1f1;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
         }
-        .toolbar { 
-            justify-content: space-between; 
+        .toolbar {
+            justify-content: space-between;
         }
-        .tabs { 
-            justify-content: flex-start; 
-            overflow-x: auto; 
+        .tabs {
+            justify-content: flex-start;
+            overflow-x: auto;
         }
-        .tab { 
-            padding: 10px 20px; 
-            background: #ddd; 
-            cursor: pointer; 
-            border-radius: 10px 10px 0 0; 
-            margin-right: 5px; 
-            position: relative; 
+        .tab {
+            padding: 10px 20px;
+            background: #ddd;
+            cursor: pointer;
+            border-radius: 10px 10px 0 0;
+            margin-right: 5px;
+            position: relative;
             transition: background 0.3s;
         }
-        .tab.active { 
-            background: #bbb; 
+        .tab.active {
+            background: #bbb;
         }
-        .close-btn { 
-            position: absolute; 
-            right: 5px; 
-            top: 5px; 
-            cursor: pointer; 
-            background: #f00; 
-            color: #fff; 
-            border-radius: 50%; 
-            padding: 2px 7px; 
+        .close-btn {
+            position: absolute;
+            right: 5px;
+            top: 5px;
+            cursor: pointer;
+            background: #f00;
+            color: #fff;
+            border-radius: 50%;
+            padding: 2px 7px;
         }
-        .tab-content { 
-            display: none; 
-            padding: 20px; 
-            border: 1px solid #ddd; 
-            border-radius: 0 0 10px 10px; 
+        .tab-content {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 0 0 10px 10px;
         }
-        .tab-content.active { 
-            display: block; 
+        .tab-content.active {
+            display: block;
         }
-        .toolbar button, .toolbar input { 
-            margin-right: 5px; 
-            padding: 5px 10px; 
-            border: 1px solid #ccc; 
-            border-radius: 5px; 
-            cursor: pointer; 
-            background-color: #fff; 
-            transition: background-color 0.3s; 
+        .toolbar button, .toolbar input {
+            margin-right: 5px;
+            padding: 5px 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #fff;
+            transition: background-color 0.3s;
         }
-        .toolbar button:hover { 
-            background-color: #e0e0e0; 
+        .toolbar button:hover {
+            background-color: #e0e0e0;
         }
-        .toolbar input { 
-            flex: 1; 
-            border-radius: 5px; 
-            padding: 5px; 
+        .toolbar input {
+            flex: 1;
+            border-radius: 5px;
+            padding: 5px;
         }
-        iframe { 
-            width: 100%; 
-            height: calc(100vh - 150px); 
-            border: 1px solid #ddd; 
-            border-radius: 0 0 10px 10px; 
+        iframe {
+            width: 100%;
+            height: calc(100vh - 150px);
+            border: 1px solid #ddd;
+            border-radius: 0 0 10px 10px;
         }
-        .settings, .history, .bookmarks { 
-            padding: 20px; 
+        .settings, .history, .bookmarks {
+            padding: 20px;
         }
-        .settings h2, .history h2, .bookmarks h2 { 
-            margin-top: 0; 
+        .settings h2, .history h2, .bookmarks h2 {
+            margin-top: 0;
         }
-        .settings input, .settings button { 
-            display: block; 
-            margin: 10px 0; 
-            padding: 5px; 
+        .settings input, .settings button {
+            display: block;
+            margin: 10px 0;
+            padding: 5px;
         }
-        .bookmark { 
-            display: flex; 
-            align-items: center; 
-            margin: 5px 0; 
+        .bookmark {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
         }
-        .bookmark button { 
-            margin-left: 10px; 
+        .bookmark button {
+            margin-left: 10px;
         }
-        button:active { 
-            background-color: #ccc; 
+        button:active {
+            background-color: #ccc;
         }
-        .nav-btn { 
-            background-color: #007BFF; 
-            color: black; 
-            border: none; 
-            border-radius: 5px; 
-            padding: 10px; 
-            transition: background-color 0.3s; 
+        .nav-btn {
+            background-color: #007BFF;
+            color: black;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            transition: background-color 0.3s;
         }
-        .nav-btn:hover { 
-            background-color: #0056b3; 
+        .nav-btn:hover {
+            background-color: #0056b3;
         }
         /* Light and dark mode styling */
         .light-mode {
@@ -123,22 +123,22 @@
             background-color: #333;
             color: #fff;
         }
-        .dark-mode .toolbar, .dark-mode .tabs { 
-            background: #444; 
+        .dark-mode .toolbar, .dark-mode .tabs {
+            background: #444;
         }
-        .dark-mode .tab { 
-            background: #555; 
+        .dark-mode .tab {
+            background: #555;
         }
-        .dark-mode .tab.active { 
-            background: #666; 
+        .dark-mode .tab.active {
+            background: #666;
         }
-        .dark-mode .toolbar button, .dark-mode .toolbar input { 
-            background-color: #555; 
-            color: #fff; 
-            border: 1px solid #666; 
+        .dark-mode .toolbar button, .dark-mode .toolbar input {
+            background-color: #555;
+            color: #fff;
+            border: 1px solid #666;
         }
-        .dark-mode .toolbar button:hover { 
-            background-color: #666; 
+        .dark-mode .toolbar button:hover {
+            background-color: #666;
         }
     </style>
 </head>
